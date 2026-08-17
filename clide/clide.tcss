@@ -1,0 +1,161 @@
+.clide-main {
+    height: 1fr;
+}
+
+
+/* Sidebar */
+
+#sidebar {
+    width: 40;
+    min-width: 28;
+    max-width: 64;
+    border-right: solid $panel;
+    background: $surface;
+}
+
+#sidebar.hidden {
+    display: none;
+}
+
+/* The vertical icon strip, VS Code's activity bar. */
+#activity-bar {
+    width: 5;
+    height: 1fr;
+    background: $panel;
+}
+
+.activity-tab {
+    width: 5;
+    height: 3;
+    content-align: center middle;
+    color: $text-muted;
+    /* Always reserve the marker's width so switching tabs doesn't shift the icon. */
+    border-left: thick transparent;
+}
+
+.activity-tab:hover {
+    background: $boost;
+    color: $text;
+}
+
+.activity-tab:focus {
+    text-style: bold;
+}
+
+.activity-tab.-active {
+    background: $surface;
+    color: $text;
+    border-left: thick $accent;
+}
+
+#sidebar-panels {
+    width: 1fr;
+    height: 1fr;
+}
+
+#explorer-panel {
+    height: 1fr;
+    overflow-y: auto;
+    overflow-x: scroll;
+}
+
+#search-panel {
+    height: 1fr;
+    padding: 0 1;
+}
+
+.search_box {
+    border: solid white;
+    width: 100%;
+}
+
+.search_btn {
+    width: 100%;
+    margin-bottom: 1;
+    color: $text;
+    height: auto;
+    background: $accent;
+    # padding: 1 0;
+}
+
+.search-status {
+    width: 100%;
+    color: $text-muted;
+}
+
+#search-results {
+    height: 1fr;
+    overflow-y: auto;
+    overflow-x: scroll;
+}
+
+
+/* Editor */
+
+#editor {
+    width: 1fr;
+}
+
+#editor-tabs {
+    height: 1fr;
+}
+
+/* File tabs: the ✕ hit area is the last two columns, so keep the padding. */
+FileTab {
+    padding: 0 1;
+}
+
+FileTab:hover {
+    background: $boost;
+}
+
+FileTab.-active {
+    text-style: bold;
+}
+
+.editor-area {
+    height: 1fr;
+}
+
+.editor-placeholder {
+    height: 1fr;
+    width: 100%;
+    content-align: center middle;
+    color: $text-muted;
+}
+
+.editor-status {
+    width: 100%;
+    padding: 0 1;
+    background: $panel;
+    color: $text-muted;
+}
+
+
+/* Header layout and styles */
+
+.app-header {
+    width: 100%;
+    padding: 0 1;
+    background: cornflowerblue;
+    color: $text;
+    align: center middle;
+    layout: horizontal;
+}
+
+.header-title {
+    width: 1fr;
+    padding-left: 1;
+    text-style: bold;
+    content-align: left middle;
+}
+
+.header-clock {
+    padding: 0 1;
+}
+
+.close_btn {
+    background: red;
+    color: $text-accent;
+    padding: 0 1;
+}

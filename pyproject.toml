@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clide"
+version = "1.0.0"
+authors = [
+    { 
+        name = "Joel Ogofe Tanko", email = "7thogofe@gmail.com", website = "jtogofe.vercel.app"
+    }
+]
+keywords = ["ide", "editor", "terminal", "tui", "textual"]
+description = "Clide - Your Friendly Terminal IDE"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["textual>=8.2"]
+license = "MIT"
+license-files = ["LICENSE"]
+
+[project.scripts]
+clide = "clide.cli:main"
+
+[tool.setuptools]
+# Listed explicitly so the local venv/ is never mistaken for a package.
+packages = ["clide", "clide.components"]
+
+[tool.setuptools.package-data]
+clide = ["*.tcss"]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Text Editors",
+    "Topic :: Software Development :: User Interfaces",
+]
+
+[project.urls]
+Homepage = "https://github.com/ogofe/clide"
+Issues = "https://github.com/ogofe/clide/issues"
