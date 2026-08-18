@@ -1,5 +1,4 @@
-# Clide 
-[![PyPI Downloads](https://static.pepy.tech/personalized-badge/clide-tui?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLUE&right_color=ORANGE&left_text=downloads)](https://pepy.tech/projects/clide-tui)
+# Clide [![PyPI Downloads](https://static.pepy.tech/personalized-badge/clide-tui?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLUE&right_color=ORANGE&left_text=downloads)](https://pepy.tech/projects/clide-tui)
 
 Your friendly terminal IDE — a file explorer, a project-wide search, and a
 tabbed editor, in the terminal.
