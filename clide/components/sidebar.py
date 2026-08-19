@@ -4,6 +4,7 @@ from textual import work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.message import Message
+from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
     ContentSwitcher,
@@ -20,6 +21,81 @@ MAX_RESULTS = 500
 
 EXPLORER_PANEL = "explorer-panel"
 SEARCH_PANEL = "search-panel"
+
+
+class IconButton(Static):
+    """A one-line clickable icon whose meaning lives in its tooltip."""
+
+    can_focus = True
+
+    BINDINGS = [("enter,space", "press", "Press")]
+
+    class Pressed(Message):
+        """The icon was clicked or activated from the keyboard."""
+
+        def __init__(self, button: "IconButton") -> None:
+            self.button = button
+            super().__init__()
+
+        @property
+        def control(self) -> "IconButton":
+            return self.button
+
+    def __init__(self, icon: str, tooltip: str, **kwargs):
+        super().__init__(icon, **kwargs)
+        self.tooltip = tooltip
+
+    def on_click(self, event) -> None:
+        event.stop()
+        self.action_press()
+
+    def action_press(self) -> None:
+        self.post_message(self.Pressed(self))
+
+
+class NamePrompt(ModalScreen[str | None]):
+    """Ask for a name, showing which directory it will be created in."""
+
+    BINDINGS = [("escape", "cancel", "Cancel")]
+
+    def __init__(self, title: str, target: Path, root: Path, placeholder: str):
+        super().__init__()
+        self.prompt_title = title
+        self.target = target
+        self.root = root
+        self.placeholder = placeholder
+
+    def compose(self) -> ComposeResult:
+        try:
+            where = self.target.relative_to(self.root)
+            where = "." if str(where) == "." else str(where)
+        except ValueError:
+            where = str(self.target)
+        with Vertical(classes="prompt-box"):
+            yield Label(self.prompt_title, classes="prompt-title")
+            yield Label(f"in {where}{'' if where.endswith('/') else '/'}",
+                        classes="prompt-where")
+            yield Input(placeholder=self.placeholder, id="prompt-input")
+            yield Label("enter to create · esc to cancel", classes="prompt-hint")
+
+    def on_mount(self) -> None:
+        self.query_one("#prompt-input", Input).focus()
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        event.stop()
+        self.dismiss(event.value.strip() or None)
+
+    def action_cancel(self) -> None:
+        self.dismiss(None)
+
+
+class ExplorerToolbar(Horizontal):
+    """The row of create/refresh icons above the file tree."""
+
+    def compose(self) -> ComposeResult:
+        yield IconButton("+📄", "New File", id="new-file-btn", classes="tool-icon")
+        yield IconButton("+📁", "New Folder", id="new-folder-btn", classes="tool-icon")
+        yield IconButton("🔄", "Refresh", id="refresh-btn", classes="tool-icon")
 
 
 class ActivityTab(Static):
@@ -75,7 +151,7 @@ class CLISidebar(Horizontal):
     def compose(self) -> ComposeResult:
         yield ActivityBar(id="activity-bar")
         with ContentSwitcher(initial=EXPLORER_PANEL, id="sidebar-panels"):
-            yield Explorer(self.path, id=EXPLORER_PANEL)
+            yield ExplorerPanel(self.path, id=EXPLORER_PANEL)
             yield SearchPanel(self.path, id=SEARCH_PANEL)
 
     def on_mount(self) -> None:
@@ -119,6 +195,91 @@ class Explorer(DirectoryTree):
 
     def filter_paths(self, paths):
         return [p for p in paths if p.name not in IGNORED]
+
+
+class ExplorerPanel(Vertical):
+    """The file tree plus its create/refresh toolbar."""
+
+    class FileCreated(Message):
+        """A new file was created and should be opened."""
+
+        def __init__(self, path: Path) -> None:
+            self.path = path
+            super().__init__()
+
+    def __init__(self, root: str | Path = ".", **kwargs):
+        super().__init__(**kwargs)
+        self.root = Path(root).resolve()
+
+    def compose(self) -> ComposeResult:
+        yield ExplorerToolbar(id="explorer-toolbar")
+        yield Explorer(self.root, id="file-tree")
+
+    @property
+    def tree(self) -> Explorer:
+        return self.query_one("#file-tree", Explorer)
+
+    def target_directory(self) -> Path:
+        """Where a new entry should go, based on what's selected.
+
+        A highlighted directory is used as-is; a highlighted file contributes
+        its parent; with nothing highlighted we fall back to the root.
+        """
+        node = self.tree.cursor_node
+        if node is None or node.data is None:
+            return self.root
+        path = Path(node.data.path)
+        return path if path.is_dir() else path.parent
+
+    def on_icon_button_pressed(self, event: IconButton.Pressed) -> None:
+        event.stop()
+        if event.button.id == "refresh-btn":
+            self.tree.reload()
+            self.notify("Explorer refreshed.")
+            return
+
+        is_file = event.button.id == "new-file-btn"
+        target = self.target_directory()
+        self.app.push_screen(
+            NamePrompt(
+                "New File" if is_file else "New Folder",
+                target,
+                self.root,
+                "name.py" if is_file else "folder-name",
+            ),
+            lambda name: self._create(name, target, is_file),
+        )
+
+    def _create(self, name: str | None, target: Path, is_file: bool) -> None:
+        """Create `name` under `target`, then reveal it."""
+        if not name:
+            return
+
+        candidate = (target / name).resolve()
+        # Keep creation inside the workspace, so a stray `../` can't escape it.
+        if not candidate.is_relative_to(self.root):
+            self.notify(f"{name} is outside the workspace.", severity="error")
+            return
+        if candidate.exists():
+            self.notify(f"{candidate.name} already exists.", severity="warning")
+            return
+
+        try:
+            if is_file:
+                # Intermediate directories let you type `pkg/mod.py` in one go.
+                candidate.parent.mkdir(parents=True, exist_ok=True)
+                candidate.touch()
+            else:
+                candidate.mkdir(parents=True)
+        except OSError as error:
+            self.notify(f"Could not create {name}: {error}", severity="error")
+            return
+
+        shown = candidate.relative_to(self.root)
+        self.notify(f"Created {shown}")
+        self.tree.reload()
+        if is_file:
+            self.post_message(self.FileCreated(candidate))
 
 
 class SearchPanel(Vertical):

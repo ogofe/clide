@@ -55,8 +55,65 @@
 
 #explorer-panel {
     height: 1fr;
+}
+
+#explorer-toolbar {
+    height: 1;
+    width: 100%;
+    background: $panel;
+}
+
+.tool-icon {
+    width: auto;
+    height: 1;
+    padding: 0 1;
+    color: $text-muted;
+}
+
+.tool-icon:hover {
+    background: $boost;
+    color: $text;
+}
+
+.tool-icon:focus {
+    text-style: bold;
+    color: $text;
+}
+
+#file-tree {
+    height: 1fr;
     overflow-y: auto;
     overflow-x: scroll;
+}
+
+/* New file / new folder prompt */
+
+NamePrompt {
+    align: center middle;
+}
+
+.prompt-box {
+    width: 52;
+    height: auto;
+    padding: 1 2;
+    background: $surface;
+    border: thick $accent;
+}
+
+.prompt-title {
+    width: 100%;
+    text-style: bold;
+}
+
+.prompt-where {
+    width: 100%;
+    color: $text-muted;
+    margin-bottom: 1;
+}
+
+.prompt-hint {
+    width: 100%;
+    color: $text-muted;
 }
 
 #search-panel {

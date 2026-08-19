@@ -11,7 +11,7 @@ from textual.widgets import Header as BaseHeader
 from textual.widgets._header import HeaderTitle
 
 from clide.components.editor import CLIEditor
-from clide.components.sidebar import CLISidebar, SearchPanel
+from clide.components.sidebar import CLISidebar, ExplorerPanel, SearchPanel
 
 APP_TITLE = "Clide - Your Friendly Terminal IDE"
 
@@ -101,6 +101,11 @@ class Clide(App):
         """Open the file a search hit points at, on the matching line."""
         event.stop()
         self.editor.open_file(event.path, line=event.line)
+
+    def on_explorer_panel_file_created(self, event: ExplorerPanel.FileCreated) -> None:
+        """Open a file the explorer just created."""
+        event.stop()
+        self.editor.open_file(event.path)
 
     def action_toggle_sidebar(self) -> None:
         self.sidebar.action_toggle_sidebar()
